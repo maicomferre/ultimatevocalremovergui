@@ -49,7 +49,7 @@ from separate import (
     save_format, clear_gpu_cache,  # Utility functions
     cuda_available, mps_available, #directml_available,
 )
-from playsound import playsound
+from playsound3 import playsound
 from typing import List
 import onnx
 import re
@@ -2261,7 +2261,11 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
         """Deletes temp files"""
         
         DIRECTORIES = (BASE_PATH, VR_MODELS_DIR, MDX_MODELS_DIR, DEMUCS_MODELS_DIR, DEMUCS_NEWER_REPO_DIR)
-        EXTENSIONS = (('.aes', '.txt', '.tmp'))
+        EXTENSIONS = ('.aes', '.txt', '.tmp')
+        exceptions = {
+            os.path.abspath(os.path.join(BASE_PATH, 'requirements.txt')),
+            os.path.abspath(os.path.join(DEMUCS_NEWER_REPO_DIR, 'demucs_models.txt')),
+        }
         
         try:
             if os.path.isfile(f"{current_patch}{application_extension}"):
@@ -2274,8 +2278,9 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
             for dir in DIRECTORIES:
                 for temp_file in os.listdir(dir):
                     if temp_file.endswith(EXTENSIONS):
-                        if os.path.isfile(os.path.join(dir, temp_file)):
-                            os.remove(os.path.join(dir, temp_file))
+                        temp_path = os.path.abspath(os.path.join(dir, temp_file))
+                        if os.path.isfile(temp_path) and temp_path not in exceptions:
+                            os.remove(temp_path)
         except Exception as e:
             self.error_log_var.set(error_text(TEMP_FILE_DELETION_TEXT, e))
         

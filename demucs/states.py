@@ -43,7 +43,10 @@ def load_model(path_or_package, strict=False):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             path = path_or_package
-            package = torch.load(path, 'cpu')
+            # Demucs packages contain their model class in addition to tensor
+            # weights, so they cannot be loaded with PyTorch's modern
+            # weights-only default. Only load model files from trusted sources.
+            package = torch.load(path, map_location='cpu', weights_only=False)
     else:
         raise ValueError(f"Invalid type for {path_or_package}.")
 

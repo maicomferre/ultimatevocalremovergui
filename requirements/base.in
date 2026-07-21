@@ -1,0 +1,35 @@
+# Direct Python dependencies imported by UVR.
+# Exact transitive versions belong in the generated lock file.
+audioread
+cryptography
+diffq
+einops
+julius
+kthread
+librosa
+llvmlite==0.48.0
+matchering
+ml-collections
+natsort
+numba==0.66.0
+numpy==2.4.6
+omegaconf
+onnx
+onnx2pytorch
+pillow
+playsound3
+psutil
+pydub
+pyglet
+pyperclip
+pyrubberband
+pytorch-lightning
+pyyaml
+resampy
+samplerate
+scipy
+screeninfo
+six
+soundfile
+tqdm
+wget

@@ -1,0 +1,6 @@
+-r base.in
+
+# CPU-only runtimes. GPU variants must use separate lock files and installers.
+onnxruntime==1.27.0
+torch==2.13.0+cpu
+torchvision==0.28.0+cpu

@@ -4,6 +4,15 @@
 [![Release](https://img.shields.io/github/release/anjok07/ultimatevocalremovergui.svg)](https://github.com/anjok07/ultimatevocalremovergui/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/anjok07/ultimatevocalremovergui/total.svg)](https://github.com/anjok07/ultimatevocalremovergui/releases)
 
+> [!IMPORTANT]
+> This fork is a community-maintained Linux edition of Ultimate Vocal Remover
+> GUI. It is not an official release by the original UVR developers. The goal
+> is to keep the existing application compatible with current Linux systems
+> and provide convenient Debian packages without changing its separation
+> algorithms. The original project, authors, releases, donations, credits, and
+> issue tracker remain available at
+> [Anjok07/ultimatevocalremovergui](https://github.com/Anjok07/ultimatevocalremovergui).
+
 ## About
 
 This application uses state-of-the-art source separation models to remove vocals from audio files. UVR's core developers trained all of the models provided in this package (except for the Demucs v3 and v4 4-stem models).

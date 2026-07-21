@@ -1,0 +1,26 @@
+# Local maintenance notes (intentionally not versioned)
+MAINTENANCE_LOCAL.md
+
+# Python caches and local environments
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+env/
+.env/
+
+# UVR runtime state and downloaded models
+data.pkl
+gui_data/cr_text.txt
+*.onnx
+*.ckpt
+*.th
+*.pkl
+models/Demucs_Models/v3_v4_repo/*.yaml
+
+# Local build output
+build/
+dist/
+*.deb
+*.buildinfo
+*.changes

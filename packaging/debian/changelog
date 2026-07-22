@@ -1,0 +1,8 @@
+ultimate-vocal-remover (5.6.0-1) unstable; urgency=medium
+
+  * Add the first community-maintained Linux CPU package.
+  * Bundle a private Python runtime and reproducible CPU dependencies.
+  * Store mutable application data in XDG user directories.
+  * Add desktop menu, icon, launcher, and window-class integration.
+
+ -- Maicom Ferreira <maicomferre@users.noreply.github.com>  Tue, 21 Jul 2026 20:00:00 -0300

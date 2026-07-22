@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Ultimate Vocal Remover
+GenericName=Audio Source Separator
+Comment=Separate vocals and instruments with neural network models
+TryExec=ultimate-vocal-remover
+Exec=ultimate-vocal-remover
+Icon=ultimate-vocal-remover
+Terminal=false
+StartupNotify=true
+StartupWMClass=Ultimatevocalremover
+Categories=AudioVideo;Audio;
+Keywords=audio;vocals;stems;separation;music;

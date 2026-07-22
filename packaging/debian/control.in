@@ -1,0 +1,16 @@
+Package: ultimate-vocal-remover
+Version: @VERSION@
+Section: sound
+Priority: optional
+Architecture: amd64
+Installed-Size: @INSTALLED_SIZE@
+Maintainer: Maicom Ferreira <maicomferre@users.noreply.github.com>
+Depends: libc6 (>= 2.34), libgcc-s1, libstdc++6, ffmpeg, rubberband-cli, xdg-utils, libx11-6, libxcb1
+Homepage: https://github.com/maicomferre/ultimatevocalremovergui
+Description: community-maintained Linux build of Ultimate Vocal Remover GUI
+ Ultimate Vocal Remover uses neural network models to separate vocals and
+ instruments from audio. This package provides the community-maintained CPU
+ runtime for Debian-based Linux distributions.
+ .
+ This is not an official release by the original UVR developers. The original
+ project and credits are preserved in the installed documentation.

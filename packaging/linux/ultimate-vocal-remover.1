@@ -1,0 +1,39 @@
+.TH ULTIMATE-VOCAL-REMOVER 1 "July 2026" "Ultimate Vocal Remover 5.6" "User Commands"
+.SH NAME
+ultimate-vocal-remover, uvr \- separate vocals and instruments from audio
+.SH SYNOPSIS
+.B ultimate-vocal-remover
+.SH DESCRIPTION
+.B Ultimate Vocal Remover
+is a graphical application that uses neural network models to separate vocals
+and instruments from audio files. This package provides a community-maintained,
+CPU-only Linux build.
+.PP
+Models and application data are stored below
+.IR ~/.local/share/ultimate-vocal-remover ,
+settings below
+.IR ~/.config/ultimate-vocal-remover ,
+and caches below
+.IR ~/.cache/ultimate-vocal-remover .
+The corresponding XDG environment variables override these base directories.
+.SH COMMANDS
+.TP
+.B ultimate-vocal-remover
+Start the graphical interface.
+.TP
+.B uvr
+Short alias for
+.BR ultimate-vocal-remover .
+.SH FILES
+.TP
+.I /usr/share/applications/ultimate-vocal-remover.desktop
+Desktop menu entry.
+.TP
+.I /usr/share/doc/ultimate-vocal-remover/README.md
+Project documentation, original credits, and usage information.
+.SH SEE ALSO
+.BR ffmpeg (1),
+.BR rubberband (1)
+.SH AUTHORS
+Ultimate Vocal Remover was created by Anjok07 and Aufr33. This Linux package is
+a community-maintained, unofficial distribution.

@@ -28,6 +28,16 @@ This application uses state-of-the-art source separation models to remove vocals
 
 These bundles contain the UVR interface, Python, PyTorch, and other dependencies needed to run the application effectively. No prerequisites are required.
 
+### Linux CPU package (community maintained)
+
+This fork provides a reproducible CPU-only Debian package for `amd64` systems.
+It targets Ubuntu 22.04 and newer, Debian 12 and newer, and corresponding Linux
+Mint releases. GPU-specific packages will be evaluated separately after the CPU
+edition is fully validated.
+
+See the [Linux packaging guide](packaging/README.md) for build, installation,
+storage, and current validation details.
+
 ### Windows Installation
 
 - Please Note:

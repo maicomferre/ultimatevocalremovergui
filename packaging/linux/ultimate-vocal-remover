@@ -1,0 +1,14 @@
+#!/bin/sh
+set -eu
+
+app_root=/usr/lib/ultimate-vocal-remover
+cache_home=${XDG_CACHE_HOME:-"${HOME}/.cache"}
+
+export UVR_USE_XDG=1
+export PYTHONNOUSERSITE=1
+export PYTHONDONTWRITEBYTECODE=1
+export MPLCONFIGDIR="${cache_home}/ultimate-vocal-remover/matplotlib"
+
+mkdir -p "${MPLCONFIGDIR}"
+
+exec "${app_root}/runtime/bin/python3.14" "${app_root}/app/UVR.py" "$@"

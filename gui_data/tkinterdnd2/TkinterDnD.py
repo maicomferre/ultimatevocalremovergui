@@ -25,10 +25,14 @@ Tk window and all its descendants.
 
 
 import tkinter
-from tkinter import tix
+import warnings
 
 TkdndVersion = None
 ARM = 'arm'
+
+def _is_tkdnd_available(widget):
+    root = widget._root()
+    return bool(getattr(root, 'TkdndVersion', None))
 
 def _require(tkroot):
     '''Internal function.'''
@@ -176,6 +180,10 @@ class DnDWrapper:
         drag source, the format type(s) that the data can be dropped as and
         finally the data that shall be dropped. Each of these three elements
         may be a tuple of strings or a single string.'''
+        if not _is_tkdnd_available(self):
+            if sequence and not sequence.startswith(('<<Drop', '<<Drag')):
+                return self.bind(sequence, func, add)
+            return None
         return self._dnd_bind(('bind', self._w), sequence, func, add)
     tkinter.BaseWidget.dnd_bind = dnd_bind
 
@@ -194,6 +202,9 @@ class DnDWrapper:
         used for starting the drag action. It can have any of the values 1
         (left mouse button), 2 (middle mouse button - wheel) and 3
         (right mouse button). If button is not specified, it defaults to 1.'''
+        if not _is_tkdnd_available(self):
+            return None
+
         # hack to fix a design bug from the first version
         if button is None:
             button = 1
@@ -214,7 +225,8 @@ class DnDWrapper:
         will stop receiving events related to drag operations. It is an error
         to use this command for a window that has not been registered as a
         drag source with drag_source_register().'''
-        self.tk.call('tkdnd::drag_source', 'unregister', self._w)
+        if _is_tkdnd_available(self):
+            self.tk.call('tkdnd::drag_source', 'unregister', self._w)
     tkinter.BaseWidget.drag_source_unregister = drag_source_unregister
 
     def drop_target_register(self, *dndtypes):
@@ -227,7 +239,8 @@ class DnDWrapper:
         independent are DND_Text for dropping text portions and DND_Files for
         dropping a list of files (which can contain one or multiple files) on
         SELF.'''
-        self.tk.call('tkdnd::drop_target', 'register', self._w, dndtypes)
+        if _is_tkdnd_available(self):
+            self.tk.call('tkdnd::drop_target', 'register', self._w, dndtypes)
     tkinter.BaseWidget.drop_target_register = drop_target_register
 
     def drop_target_unregister(self):
@@ -235,7 +248,8 @@ class DnDWrapper:
         will stop receiving events related to drop operations. It is an error
         to use this command for a window that has not been registered as a
         drop target with drop_target_register().'''
-        self.tk.call('tkdnd::drop_target', 'unregister', self._w)
+        if _is_tkdnd_available(self):
+            self.tk.call('tkdnd::drop_target', 'unregister', self._w)
     tkinter.BaseWidget.drop_target_unregister = drop_target_unregister
 
     def platform_independent_types(self, *dndtypes):
@@ -284,11 +298,27 @@ class Tk(tkinter.Tk, DnDWrapper):
     DnDWrapper class apply to this window and all its descendants.'''
     def __init__(self, *args, **kw):
         tkinter.Tk.__init__(self, *args, **kw)
-        self.TkdndVersion = _require(self)
+        try:
+            self.TkdndVersion = _require(self)
+        except RuntimeError:
+            self.TkdndVersion = None
+            warnings.warn(
+                'tkdnd is unavailable for this Tk version; drag and drop is disabled.',
+                RuntimeWarning,
+                stacklevel=2,
+            )
 
-class TixTk(tix.Tk, DnDWrapper):
-    '''Creates a new instance of a tix.Tk() window; all methods of the
+class TixTk(tkinter.Tk, DnDWrapper):
+    '''Compatibility alias using tkinter.Tk; all methods of the
     DnDWrapper class apply to this window and all its descendants.'''
     def __init__(self, *args, **kw):
-        tix.Tk.__init__(self, *args, **kw)
-        self.TkdndVersion = _require(self)
+        tkinter.Tk.__init__(self, *args, **kw)
+        try:
+            self.TkdndVersion = _require(self)
+        except RuntimeError:
+            self.TkdndVersion = None
+            warnings.warn(
+                'tkdnd is unavailable for this Tk version; drag and drop is disabled.',
+                RuntimeWarning,
+                stacklevel=2,
+            )

@@ -4,6 +4,16 @@
 [![Release](https://img.shields.io/github/release/anjok07/ultimatevocalremovergui.svg)](https://github.com/anjok07/ultimatevocalremovergui/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/anjok07/ultimatevocalremovergui/total.svg)](https://github.com/anjok07/ultimatevocalremovergui/releases)
 
+> [!IMPORTANT]
+> This fork is maintained specifically for Linux. It is not an official release
+> by the original UVR developers. Its goal is to keep the existing application
+> compatible with current Linux systems and provide convenient Debian packages
+> without changing its separation algorithms. Windows and macOS are outside the
+> scope of this fork because their installers cannot be tested by its maintainer.
+> Users of those systems should clone the original project or use the official
+> downloads and instructions from
+> [Anjok07/ultimatevocalremovergui](https://github.com/Anjok07/ultimatevocalremovergui).
+
 ## About
 
 This application uses state-of-the-art source separation models to remove vocals from audio files. UVR's core developers trained all of the models provided in this package (except for the Demucs v3 and v4 4-stem models).
@@ -19,7 +29,21 @@ This application uses state-of-the-art source separation models to remove vocals
 
 These bundles contain the UVR interface, Python, PyTorch, and other dependencies needed to run the application effectively. No prerequisites are required.
 
-### Windows Installation
+### Linux CPU package (community maintained)
+
+This fork provides a reproducible CPU-only Debian package for `amd64` systems.
+It targets Ubuntu 22.04 and newer, Debian 12 and newer, and corresponding Linux
+Mint releases. GPU-specific packages will be evaluated separately after the CPU
+edition is fully validated.
+
+See the [Linux packaging guide](packaging/README.md) for build, installation,
+storage, and current validation details.
+
+### Windows installation (original upstream instructions)
+
+> This section is preserved from the original project for reference. Windows is
+> not maintained or tested in this Linux-focused fork. Use the original
+> repository and its official downloads for Windows installations.
 
 - Please Note:
     - This installer is intended for those running Windows 10 or higher. 
@@ -74,7 +98,11 @@ In order to use the Time Stretch or Change Pitch tool, you'll need Rubber Band.
 
 </details>
 
-### MacOS Installation
+### macOS installation (original upstream instructions)
+
+> This section is preserved from the original project for reference. macOS is
+> not maintained or tested in this Linux-focused fork. Use the original
+> repository and its official downloads for macOS installations.
 - Please Note:
     - The MacOS Sonoma mouse clicking issue has been fixed.
     - MPS (GPU) acceleration for Mac M1 has been expanded to work with Demucs v4 and all MDX-Net models.

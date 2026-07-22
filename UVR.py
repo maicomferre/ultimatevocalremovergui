@@ -40,6 +40,7 @@ from gui_data.app_size_values import *
 from gui_data.error_handling import error_text, error_dialouge
 from gui_data.old_data_check import file_check, remove_unneeded_yamls, remove_temps
 from gui_data.tkinterdnd2 import TkinterDnD, DND_FILES
+from gui_data.linux_desktop import set_x11_window_icon
 from lib_v5.vr_network.model_param_init import ModelParameters
 from kthread import KThread
 from lib_v5 import spec_utils
@@ -49,7 +50,7 @@ from separate import (
     save_format, clear_gpu_cache,  # Utility functions
     cuda_available, mps_available, #directml_available,
 )
-from playsound import playsound
+from playsound3 import playsound
 from typing import List
 import onnx
 import re
@@ -79,7 +80,35 @@ else:
 
 os.chdir(BASE_PATH)  # Change the current working directory to the base path
 
-SPLASH_DOC = os.path.join(BASE_PATH, 'tmp', 'splash.txt')
+APP_ID = 'ultimate-vocal-remover'
+USE_XDG_DIRS = OPERATING_SYSTEM == 'Linux' and os.environ.get('UVR_USE_XDG') == '1'
+DEFAULT_FILE_DIALOG_DIR = (
+    os.path.abspath(os.path.expanduser('~')) if USE_XDG_DIRS else BASE_PATH
+)
+
+if USE_XDG_DIRS:
+    APP_DATA_PATH = os.path.abspath(os.path.expanduser(os.environ.get(
+        'UVR_DATA_DIR',
+        os.path.join(os.environ.get('XDG_DATA_HOME', '~/.local/share'), APP_ID),
+    )))
+    APP_CONFIG_PATH = os.path.abspath(os.path.expanduser(os.environ.get(
+        'UVR_CONFIG_DIR',
+        os.path.join(os.environ.get('XDG_CONFIG_HOME', '~/.config'), APP_ID),
+    )))
+    APP_CACHE_PATH = os.path.abspath(os.path.expanduser(os.environ.get(
+        'UVR_CACHE_DIR',
+        os.path.join(os.environ.get('XDG_CACHE_HOME', '~/.cache'), APP_ID),
+    )))
+else:
+    APP_DATA_PATH = BASE_PATH
+    APP_CONFIG_PATH = BASE_PATH
+    APP_CACHE_PATH = BASE_PATH
+
+for app_path in (APP_DATA_PATH, APP_CONFIG_PATH, APP_CACHE_PATH):
+    os.makedirs(app_path, exist_ok=True)
+
+SPLASH_DOC = os.path.join(APP_CACHE_PATH, 'splash.txt')
+DATA_FILE = os.path.join(APP_CONFIG_PATH, 'data.pkl')
 
 if os.path.isfile(SPLASH_DOC):
     os.remove(SPLASH_DOC)
@@ -166,7 +195,7 @@ def save_data(data):
             Dictionary containing all the necessary data to save
     """
     # Open data file, create it if it does not exist
-    with open('data.pkl', 'wb') as data_file:
+    with open(DATA_FILE, 'wb') as data_file:
         pickle.dump(data, data_file)
 
 def load_data() -> dict:
@@ -177,7 +206,7 @@ def load_data() -> dict:
         Dictionary containing all the saved data
     """
     try:
-        with open('data.pkl', 'rb') as data_file:  # Open data file
+        with open(DATA_FILE, 'rb') as data_file:  # Open data file
             data = pickle.load(data_file)
 
         return data
@@ -217,12 +246,24 @@ debugger = []
 
 #--Constants--
 #Models
-MODELS_DIR = os.path.join(BASE_PATH, 'models')
+MODELS_DIR = os.path.join(APP_DATA_PATH, 'models')
 VR_MODELS_DIR = os.path.join(MODELS_DIR, 'VR_Models')
 MDX_MODELS_DIR = os.path.join(MODELS_DIR, 'MDX_Net_Models')
 DEMUCS_MODELS_DIR = os.path.join(MODELS_DIR, 'Demucs_Models')
 DEMUCS_NEWER_REPO_DIR = os.path.join(DEMUCS_MODELS_DIR, 'v3_v4_repo')
 MDX_MIXER_PATH = os.path.join(BASE_PATH, 'lib_v5', 'mixer.ckpt')
+
+if USE_XDG_DIRS:
+    source_models_dir = os.path.join(BASE_PATH, 'models')
+    for source_dir, _, source_files in os.walk(source_models_dir):
+        relative_dir = os.path.relpath(source_dir, source_models_dir)
+        destination_dir = os.path.join(MODELS_DIR, relative_dir)
+        os.makedirs(destination_dir, exist_ok=True)
+        for source_file in source_files:
+            source_path = os.path.join(source_dir, source_file)
+            destination_path = os.path.join(destination_dir, source_file)
+            if not os.path.exists(destination_path):
+                shutil.copy2(source_path, destination_path)
 
 #Cache & Parameters
 VR_HASH_DIR = os.path.join(VR_MODELS_DIR, 'model_data')
@@ -233,15 +274,15 @@ MDX_C_CONFIG_PATH = os.path.join(MDX_HASH_DIR, 'mdx_c_configs')
 
 DEMUCS_MODEL_NAME_SELECT = os.path.join(DEMUCS_MODELS_DIR, 'model_data', 'model_name_mapper.json')
 MDX_MODEL_NAME_SELECT = os.path.join(MDX_MODELS_DIR, 'model_data', 'model_name_mapper.json')
-ENSEMBLE_CACHE_DIR = os.path.join(BASE_PATH, 'gui_data', 'saved_ensembles')
-SETTINGS_CACHE_DIR = os.path.join(BASE_PATH, 'gui_data', 'saved_settings')
+ENSEMBLE_CACHE_DIR = os.path.join(APP_CONFIG_PATH, 'saved_ensembles')
+SETTINGS_CACHE_DIR = os.path.join(APP_CONFIG_PATH, 'saved_settings')
 VR_PARAM_DIR = os.path.join(BASE_PATH, 'lib_v5', 'vr_network', 'modelparams')
-SAMPLE_CLIP_PATH = os.path.join(BASE_PATH, 'temp_sample_clips')
-ENSEMBLE_TEMP_PATH = os.path.join(BASE_PATH, 'ensemble_temps')
-DOWNLOAD_MODEL_CACHE = os.path.join(BASE_PATH, 'gui_data', 'model_manual_download.json')
+SAMPLE_CLIP_PATH = os.path.join(APP_CACHE_PATH, 'temp_sample_clips')
+ENSEMBLE_TEMP_PATH = os.path.join(APP_CACHE_PATH, 'ensemble_temps')
+DOWNLOAD_MODEL_CACHE = os.path.join(APP_CACHE_PATH, 'model_manual_download.json')
 
 #CR Text
-CR_TEXT = os.path.join(BASE_PATH, 'gui_data', 'cr_text.txt')
+CR_TEXT = os.path.join(APP_CACHE_PATH, 'cr_text.txt')
 
 #Style
 ICON_IMG_PATH = os.path.join(BASE_PATH, 'gui_data', 'img', 'GUI-Icon.ico')
@@ -276,13 +317,16 @@ remove_unneeded_yamls(DEMUCS_MODELS_DIR)
 
 remove_temps(ENSEMBLE_TEMP_PATH)
 remove_temps(SAMPLE_CLIP_PATH)
-remove_temps(os.path.join(BASE_PATH, 'img'))
+if not USE_XDG_DIRS:
+    remove_temps(os.path.join(BASE_PATH, 'img'))
 
-if not os.path.isdir(ENSEMBLE_TEMP_PATH):
-    os.mkdir(ENSEMBLE_TEMP_PATH)
-    
-if not os.path.isdir(SAMPLE_CLIP_PATH):
-    os.mkdir(SAMPLE_CLIP_PATH)
+for runtime_dir in (
+    ENSEMBLE_CACHE_DIR,
+    SETTINGS_CACHE_DIR,
+    ENSEMBLE_TEMP_PATH,
+    SAMPLE_CLIP_PATH,
+):
+    os.makedirs(runtime_dir, exist_ok=True)
 
 model_hash_table = {}
 data = load_data()
@@ -1286,7 +1330,7 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
     
     def __init__(self):
         #Run the __init__ method on the tk.Tk class
-        super().__init__()
+        super().__init__(className='UltimateVocalRemover')
         
         self.set_app_font()
 
@@ -1313,7 +1357,13 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
             xpad=int(self.winfo_screenwidth()/2 - width/2),
             ypad=int(self.winfo_screenheight()/2 - height/2 - 30)))
  
-        self.iconbitmap(ICON_IMG_PATH) if is_windows else self.tk.call('wm', 'iconphoto', self._w, tk.PhotoImage(file=MAIN_ICON_IMG_PATH))
+        if is_windows:
+            self.iconbitmap(ICON_IMG_PATH)
+        else:
+            window_icon_source = tk.PhotoImage(file=MAIN_ICON_IMG_PATH)
+            scale = max(1, window_icon_source.width() // 256)
+            self._window_icon = window_icon_source.subsample(scale, scale)
+            self.iconphoto(True, self._window_icon)
         self.protocol("WM_DELETE_WINDOW", self.save_values)
         self.resizable(False, False)
         
@@ -2146,6 +2196,19 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
     def show_file_dialog(self, text='Select Audio files', dialoge_type=None):
         parent_win = root
         is_linux = not is_windows and not is_macos
+        saved_input_dir = (
+            self.lastDir if self.lastDir and os.path.isdir(self.lastDir) else None
+        )
+        saved_export_dir = self.export_path_var.get()
+        saved_export_dir = (
+            saved_export_dir if os.path.isdir(saved_export_dir) else None
+        )
+        initial_dir = (
+            saved_export_dir
+            if dialoge_type == CHOOSE_EXPORT_FIR
+            else saved_input_dir
+        )
+        initial_dir = initial_dir or DEFAULT_FILE_DIALOG_DIR
         
         if is_linux:
             self.linux_filebox_fix()
@@ -2155,20 +2218,29 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
             parent_win = top
         
         if dialoge_type == MULTIPLE_FILE:
-            filenames = filedialog.askopenfilenames(parent=parent_win, 
-                                                    title=text)
+            filenames = filedialog.askopenfilenames(parent=parent_win,
+                                                    title=text,
+                                                    initialdir=initial_dir)
         elif dialoge_type == MAIN_MULTIPLE_FILE:
-            filenames = filedialog.askopenfilenames(parent=parent_win, 
+            filenames = filedialog.askopenfilenames(parent=parent_win,
                                                     title=text,
                                                     initialfile='',
-                                                    initialdir=self.lastDir)
+                                                    initialdir=initial_dir)
         elif dialoge_type == SINGLE_FILE:
-            filenames = filedialog.askopenfilename(parent=parent_win, 
-                                                   title=text)
+            filenames = filedialog.askopenfilename(parent=parent_win,
+                                                   title=text,
+                                                   initialdir=initial_dir)
         elif dialoge_type == CHOOSE_EXPORT_FIR:
             filenames = filedialog.askdirectory(
                                     parent=parent_win,
-                                    title=f'Select Folder',)
+                                    title=f'Select Folder',
+                                    initialdir=initial_dir)
+
+        if filenames and dialoge_type != CHOOSE_EXPORT_FIR:
+            selected_file = (
+                filenames[0] if isinstance(filenames, (tuple, list)) else filenames
+            )
+            self.lastDir = os.path.dirname(os.path.abspath(selected_file))
             
         if is_linux:
             print("Is Linux")
@@ -2260,8 +2332,13 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
     def delete_temps(self, is_start_up=False):  
         """Deletes temp files"""
         
-        DIRECTORIES = (BASE_PATH, VR_MODELS_DIR, MDX_MODELS_DIR, DEMUCS_MODELS_DIR, DEMUCS_NEWER_REPO_DIR)
-        EXTENSIONS = (('.aes', '.txt', '.tmp'))
+        runtime_root = APP_CACHE_PATH if USE_XDG_DIRS else BASE_PATH
+        DIRECTORIES = (runtime_root, VR_MODELS_DIR, MDX_MODELS_DIR, DEMUCS_MODELS_DIR, DEMUCS_NEWER_REPO_DIR)
+        EXTENSIONS = ('.aes', '.txt', '.tmp')
+        exceptions = {
+            os.path.abspath(os.path.join(BASE_PATH, 'requirements.txt')),
+            os.path.abspath(os.path.join(DEMUCS_NEWER_REPO_DIR, 'demucs_models.txt')),
+        }
         
         try:
             if os.path.isfile(f"{current_patch}{application_extension}"):
@@ -2274,8 +2351,9 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
             for dir in DIRECTORIES:
                 for temp_file in os.listdir(dir):
                     if temp_file.endswith(EXTENSIONS):
-                        if os.path.isfile(os.path.join(dir, temp_file)):
-                            os.remove(os.path.join(dir, temp_file))
+                        temp_path = os.path.abspath(os.path.join(dir, temp_file))
+                        if os.path.isfile(temp_path) and temp_path not in exceptions:
+                            os.remove(temp_path)
         except Exception as e:
             self.error_log_var.set(error_text(TEMP_FILE_DELETION_TEXT, e))
         
@@ -2675,7 +2753,10 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
         window.resizable(False, False)
         window.wm_transient(top_window)
         window.title(title)
-        window.iconbitmap(ICON_IMG_PATH) if is_windows else self.tk.call('wm', 'iconphoto', window._w, tk.PhotoImage(file=MAIN_ICON_IMG_PATH))
+        if is_windows:
+            window.iconbitmap(ICON_IMG_PATH)
+        else:
+            window.iconphoto(False, self._window_icon)
         
         root_location_x = root.winfo_x()
         root_location_y = root.winfo_y()
@@ -3252,7 +3333,7 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
         help_hints_Option = ttk.Checkbutton(settings_menu_main_Frame, text=ENABLE_HELP_HINTS_TEXT, variable=self.help_hints_var, width=HELP_HINT_CHECKBOX_WIDTH) 
         help_hints_Option.grid(pady=MENU_PADDING_1)
         
-        open_app_dir_Button = ttk.Button(settings_menu_main_Frame, text=OPEN_APPLICATION_DIRECTORY_TEXT, command=lambda:OPEN_FILE_func(BASE_PATH), width=SETTINGS_BUT_WIDTH)
+        open_app_dir_Button = ttk.Button(settings_menu_main_Frame, text=OPEN_APPLICATION_DIRECTORY_TEXT, command=lambda:OPEN_FILE_func(APP_DATA_PATH), width=SETTINGS_BUT_WIDTH)
         open_app_dir_Button.grid(pady=MENU_PADDING_1)
         
         reset_all_app_settings_Button = ttk.Button(settings_menu_main_Frame, text=RESET_ALL_SETTINGS_TO_DEFAULT_TEXT, command=lambda:self.load_to_default_confirm(), width=SETTINGS_BUT_WIDTH)#pop_up_change_model_defaults
@@ -7261,5 +7342,10 @@ if __name__ == "__main__":
 
     root.update() if is_windows else root.update_idletasks()
     root.deiconify()
+    if not is_windows:
+        root.update_idletasks()
+        root.iconphoto(True, root._window_icon)
+        if OPERATING_SYSTEM == 'Linux':
+            root.after(250, set_x11_window_icon, root, MAIN_ICON_IMG_PATH)
     root.configure(bg=BG_COLOR)
     root.mainloop()

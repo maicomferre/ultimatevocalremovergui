@@ -58,7 +58,7 @@ then removes development-only files from the disposable staging tree.
 APT resolves the required system tools and libraries:
 
 ```bash
-sudo apt install ./dist/ultimate-vocal-remover_5.6.0-1_amd64.deb
+sudo apt install ./dist/ultimate-vocal-remover_5.6.0-2_amd64.deb
 ```
 
 Start the application from the desktop menu or run:

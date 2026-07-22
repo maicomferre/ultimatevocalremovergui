@@ -1,3 +1,11 @@
+ultimate-vocal-remover (5.6.0-2) unstable; urgency=medium
+
+  * Match the desktop launcher to the packaged Tk window.
+  * Install standard Hicolor sizes and publish the X11 window icon.
+  * Precompile Python bytecode to improve startup performance.
+
+ -- Maicom Ferreira <maicomferre@users.noreply.github.com>  Tue, 21 Jul 2026 22:30:00 -0300
+
 ultimate-vocal-remover (5.6.0-1) unstable; urgency=medium
 
   * Add the first community-maintained Linux CPU package.

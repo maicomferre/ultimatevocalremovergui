@@ -40,6 +40,7 @@ from gui_data.app_size_values import *
 from gui_data.error_handling import error_text, error_dialouge
 from gui_data.old_data_check import file_check, remove_unneeded_yamls, remove_temps
 from gui_data.tkinterdnd2 import TkinterDnD, DND_FILES
+from gui_data.linux_desktop import set_x11_window_icon
 from lib_v5.vr_network.model_param_init import ModelParameters
 from kthread import KThread
 from lib_v5 import spec_utils
@@ -1356,7 +1357,9 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
         if is_windows:
             self.iconbitmap(ICON_IMG_PATH)
         else:
-            self._window_icon = tk.PhotoImage(file=MAIN_ICON_IMG_PATH)
+            window_icon_source = tk.PhotoImage(file=MAIN_ICON_IMG_PATH)
+            scale = max(1, window_icon_source.width() // 256)
+            self._window_icon = window_icon_source.subsample(scale, scale)
             self.iconphoto(True, self._window_icon)
         self.protocol("WM_DELETE_WINDOW", self.save_values)
         self.resizable(False, False)
@@ -7314,5 +7317,10 @@ if __name__ == "__main__":
 
     root.update() if is_windows else root.update_idletasks()
     root.deiconify()
+    if not is_windows:
+        root.update_idletasks()
+        root.iconphoto(True, root._window_icon)
+        if OPERATING_SYSTEM == 'Linux':
+            root.after(250, set_x11_window_icon, root, MAIN_ICON_IMG_PATH)
     root.configure(bg=BG_COLOR)
     root.mainloop()

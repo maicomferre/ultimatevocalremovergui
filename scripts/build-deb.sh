@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-version="${UVR_DEB_VERSION:-5.6.0-1}"
+version="${UVR_DEB_VERSION:-5.6.0-2}"
 python_version="${UVR_PYTHON_VERSION:-3.14.6}"
 package_name=ultimate-vocal-remover
 build_dir="${repo_dir}/build/debian"
@@ -67,7 +67,7 @@ install -d \
     "${staging_dir}/usr/lib/${package_name}/runtime" \
     "${staging_dir}/usr/share/applications" \
     "${staging_dir}/usr/share/doc/${package_name}" \
-    "${staging_dir}/usr/share/icons/hicolor/1024x1024/apps" \
+    "${staging_dir}/usr/share/icons/hicolor" \
     "${staging_dir}/usr/share/man/man1"
 
 rsync -a "${runtime_source}/" "${staging_dir}/usr/lib/${package_name}/runtime/"
@@ -103,6 +103,9 @@ rm -rf "${runtime_root}/lib/python3.14/config-3.14-x86_64-linux-gnu"
 # Console scripts from dependencies point at the temporary build interpreter
 # and are not used by UVR. The launcher calls the embedded interpreter directly.
 find "${runtime_root}/bin" -mindepth 1 -maxdepth 1 ! -name python3.14 -delete
+find "${runtime_site}" -mindepth 1 -maxdepth 1 \
+    \( -name pip -o -name 'pip-*.dist-info' \) -exec rm -rf {} +
+find "${runtime_root}" -type f -iname '*.exe' -delete
 
 for source_path in UVR.py separate.py __version__.py demucs gui_data lib_v5 models; do
     rsync -a "${repo_dir}/${source_path}" "${staging_dir}/usr/lib/${package_name}/app/"
@@ -121,13 +124,26 @@ find "${staging_dir}/usr/lib/${package_name}" \
 find "${staging_dir}/usr/lib/${package_name}" \
     -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete
 
+# Users cannot write bytecode below /usr/lib. Precompile deterministic caches so
+# startup does not recompile the standard library and every dependency.
+SOURCE_DATE_EPOCH=0 PYTHONHASHSEED=0 PYTHONWARNINGS=ignore::SyntaxWarning \
+    "${staged_python}" -m compileall \
+    --invalidation-mode checked-hash \
+    -j 2 \
+    -q \
+    "${runtime_root}/lib/python3.14" \
+    "${staging_dir}/usr/lib/${package_name}/app"
+PYTHONNOUSERSITE=1 "${staged_python}" -c \
+    "import librosa, onnxruntime, PIL, torch, torchvision; assert torch.__version__.endswith('+cpu'); assert not torch.cuda.is_available()"
+
 install -m 0755 packaging/linux/ultimate-vocal-remover \
     "${staging_dir}/usr/bin/ultimate-vocal-remover"
 ln -s ultimate-vocal-remover "${staging_dir}/usr/bin/uvr"
 install -m 0644 packaging/linux/ultimate-vocal-remover.desktop \
     "${staging_dir}/usr/share/applications/ultimate-vocal-remover.desktop"
-install -m 0644 gui_data/img/GUI-Icon.png \
-    "${staging_dir}/usr/share/icons/hicolor/1024x1024/apps/ultimate-vocal-remover.png"
+"${staged_python}" scripts/generate-linux-icons.py \
+    gui_data/img/GUI-Icon.png \
+    "${staging_dir}/usr/share/icons/hicolor"
 install -m 0644 README.md LICENSE \
     "${staging_dir}/usr/share/doc/${package_name}/"
 install -m 0644 packaging/debian/copyright \

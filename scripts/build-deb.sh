@@ -2,9 +2,10 @@
 set -euo pipefail
 
 repo_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-version="${UVR_DEB_VERSION:-5.6.0-3}"
+version="${UVR_DEB_VERSION:-5.6.0-4}"
 python_version="${UVR_PYTHON_VERSION:-3.14.6}"
 package_name=ultimate-vocal-remover
+max_compression_threads=6
 build_dir="${repo_dir}/build/debian"
 staging_dir="${build_dir}/root"
 dist_dir="${repo_dir}/dist"
@@ -174,7 +175,8 @@ chmod 0755 \
     "${staging_dir}/usr/bin/ultimate-vocal-remover"
 
 deb_path="${dist_dir}/${package_name}_${version}_amd64.deb"
-dpkg-deb --root-owner-group -Zzstd -z10 --build "${staging_dir}" "${deb_path}"
+dpkg-deb --root-owner-group --threads-max="${max_compression_threads}" \
+    -Zzstd -z10 --build "${staging_dir}" "${deb_path}"
 (
     cd "${dist_dir}"
     sha256sum "$(basename -- "${deb_path}")" > "$(basename -- "${deb_path}").sha256"

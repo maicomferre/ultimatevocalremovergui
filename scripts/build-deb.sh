@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-version="${UVR_DEB_VERSION:-5.6.0-2}"
+version="${UVR_DEB_VERSION:-5.6.0-3}"
 python_version="${UVR_PYTHON_VERSION:-3.14.6}"
 package_name=ultimate-vocal-remover
 build_dir="${repo_dir}/build/debian"
@@ -70,7 +70,10 @@ install -d \
     "${staging_dir}/usr/share/icons/hicolor" \
     "${staging_dir}/usr/share/man/man1"
 
-rsync -a "${runtime_source}/" "${staging_dir}/usr/lib/${package_name}/runtime/"
+# Source runtimes may come from a root-owned installed package. Ownership is
+# normalized by dpkg-deb below, so do not preserve host-specific owners here.
+rsync -a --no-owner --no-group \
+    "${runtime_source}/" "${staging_dir}/usr/lib/${package_name}/runtime/"
 
 runtime_root="${staging_dir}/usr/lib/${package_name}/runtime"
 runtime_site="${runtime_root}/lib/python3.14/site-packages"

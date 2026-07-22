@@ -82,6 +82,9 @@ os.chdir(BASE_PATH)  # Change the current working directory to the base path
 
 APP_ID = 'ultimate-vocal-remover'
 USE_XDG_DIRS = OPERATING_SYSTEM == 'Linux' and os.environ.get('UVR_USE_XDG') == '1'
+DEFAULT_FILE_DIALOG_DIR = (
+    os.path.abspath(os.path.expanduser('~')) if USE_XDG_DIRS else BASE_PATH
+)
 
 if USE_XDG_DIRS:
     APP_DATA_PATH = os.path.abspath(os.path.expanduser(os.environ.get(
@@ -2193,6 +2196,19 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
     def show_file_dialog(self, text='Select Audio files', dialoge_type=None):
         parent_win = root
         is_linux = not is_windows and not is_macos
+        saved_input_dir = (
+            self.lastDir if self.lastDir and os.path.isdir(self.lastDir) else None
+        )
+        saved_export_dir = self.export_path_var.get()
+        saved_export_dir = (
+            saved_export_dir if os.path.isdir(saved_export_dir) else None
+        )
+        initial_dir = (
+            saved_export_dir
+            if dialoge_type == CHOOSE_EXPORT_FIR
+            else saved_input_dir
+        )
+        initial_dir = initial_dir or DEFAULT_FILE_DIALOG_DIR
         
         if is_linux:
             self.linux_filebox_fix()
@@ -2202,20 +2218,29 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
             parent_win = top
         
         if dialoge_type == MULTIPLE_FILE:
-            filenames = filedialog.askopenfilenames(parent=parent_win, 
-                                                    title=text)
+            filenames = filedialog.askopenfilenames(parent=parent_win,
+                                                    title=text,
+                                                    initialdir=initial_dir)
         elif dialoge_type == MAIN_MULTIPLE_FILE:
-            filenames = filedialog.askopenfilenames(parent=parent_win, 
+            filenames = filedialog.askopenfilenames(parent=parent_win,
                                                     title=text,
                                                     initialfile='',
-                                                    initialdir=self.lastDir)
+                                                    initialdir=initial_dir)
         elif dialoge_type == SINGLE_FILE:
-            filenames = filedialog.askopenfilename(parent=parent_win, 
-                                                   title=text)
+            filenames = filedialog.askopenfilename(parent=parent_win,
+                                                   title=text,
+                                                   initialdir=initial_dir)
         elif dialoge_type == CHOOSE_EXPORT_FIR:
             filenames = filedialog.askdirectory(
                                     parent=parent_win,
-                                    title=f'Select Folder',)
+                                    title=f'Select Folder',
+                                    initialdir=initial_dir)
+
+        if filenames and dialoge_type != CHOOSE_EXPORT_FIR:
+            selected_file = (
+                filenames[0] if isinstance(filenames, (tuple, list)) else filenames
+            )
+            self.lastDir = os.path.dirname(os.path.abspath(selected_file))
             
         if is_linux:
             print("Is Linux")

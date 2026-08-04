@@ -58,7 +58,7 @@ then removes development-only files from the disposable staging tree.
 APT resolves the required system tools and libraries:
 
 ```bash
-sudo apt install ./dist/ultimate-vocal-remover_5.6.0-4_amd64.deb
+sudo apt install ./dist/ultimate-vocal-remover_5.6.0-5_amd64.deb
 ```
 
 Start the application from the desktop menu or run:
@@ -91,3 +91,16 @@ directories.
 The generated package should be tested in a clean VM before publishing a
 release. At minimum, verify installation, desktop menu entry and icon, settings
 persistence, model download, a real CPU separation, upgrade, and removal.
+
+## Version updates
+
+The packaged Linux edition does not follow the upstream `current_version_linux`
+string from the application catalog. It reports the real Debian revision and
+checks for updates against a small manifest published with the APT repository:
+
+- Manifest: `https://apt.maicom.dev/uvr-manifest.json`
+- Field used by the CPU package: `linux_cpu`
+
+Comparisons use Debian version ordering, so a textual difference is never
+treated as a newer version. When an update is available, the application shows
+APT instructions instead of an in-app download prompt.

@@ -1,3 +1,12 @@
+ultimate-vocal-remover (5.6.0-5) unstable; urgency=medium
+
+  * Separate the packaged Linux version from the upstream release catalog.
+  * Compare versions against the fork's own manifest published with the APT
+    repository instead of the upstream update string.
+  * Show APT-managed update instructions instead of an in-app download prompt.
+
+ -- Maicom Ferreira <maicomferre@users.noreply.github.com>  Mon, 03 Aug 2026 20:00:00 -0300
+
 ultimate-vocal-remover (5.6.0-4) unstable; urgency=medium
 
   * Limit Debian package compression to at most six worker threads.

@@ -122,6 +122,24 @@ def get_execution_time(function, name):
 
 PREVIOUS_PATCH_WIN = 'UVR_Patch_10_6_23_4_27'
 
+def debian_version_key(version):
+    """Compares Debian-style versions such as '5.6.0-4' by upstream and revision."""
+    version = str(version).strip()
+    try:
+        epoch = 0
+        upstream, _, revision = version.partition("-")
+        if ":" in upstream:
+            epoch_str, _, upstream = upstream.partition(":")
+            epoch = int(epoch_str)
+        upstream_parts = [int(part) for part in upstream.split(".") if part.isdigit()]
+        try:
+            revision_num = int(revision) if revision else 0
+        except ValueError:
+            revision_num = 0
+        return (epoch, upstream_parts, revision_num)
+    except Exception:
+        return (0, [], 0)
+
 is_dnd_compatible = True
 banner_placement = -2
 
@@ -4476,6 +4494,9 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
             update_confirmation_win.destroy()
             
         if is_new_update:
+            if OPERATING_SYSTEM == "Linux":
+                self.message_box((UPDATE_FOUND_TEXT, LINUX_APT_MANAGED_TEXT))
+                return
             
             update_confirmation_win = tk.Toplevel()
 
@@ -5211,6 +5232,18 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
 
     #--Download Center Methods--    
 
+    def get_linux_latest_version(self):
+        """Returns the latest Linux CPU version advertised by the fork's own
+        manifest, or the installed version when it cannot be read."""
+        try:
+            manifest = json.load(urllib.request.urlopen(LINUX_VERSION_MANIFEST, timeout=10))
+            latest = manifest.get("linux_cpu")
+            if isinstance(latest, str) and latest:
+                return latest
+        except Exception as e:
+            print(e)
+        return current_patch
+
     def online_data_refresh(self, user_refresh=True, confirmation_box=False, refresh_list_Button=False, is_start_up=False, is_download_complete=False):
         """Checks for application updates"""
         
@@ -5248,20 +5281,27 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
                 if OPERATING_SYSTEM=="Darwin":
                     self.lastest_version = self.online_data["current_version_mac"]
                 elif OPERATING_SYSTEM=="Linux":
-                    self.lastest_version = self.online_data["current_version_linux"]
+                    self.lastest_version = self.get_linux_latest_version()
                 else:
                     self.lastest_version = self.online_data["current_version"]
                     
-                if self.lastest_version == current_patch and not is_start_up:
+                if OPERATING_SYSTEM == "Linux":
+                    is_new_update = debian_version_key(self.lastest_version) > debian_version_key(current_patch)
+                else:
+                    is_new_update = self.lastest_version != current_patch
+
+                if not is_new_update and not is_start_up:
                     self.app_update_status_Text_var.set('UVR Version Current')
                 else:
-                    is_new_update = True
                     is_beta_version = True if self.lastest_version == PREVIOUS_PATCH_WIN and BETA_VERSION in current_patch else False
                     
                     if not is_start_up:
                         if is_beta_version:
                             self.app_update_status_Text_var.set(f"Roll Back: {self.lastest_version}")
                             self.app_update_button_Text_var.set(ROLL_BACK_TEXT)
+                        elif OPERATING_SYSTEM == "Linux":
+                            self.app_update_status_Text_var.set(LINUX_UPDATE_STATUS_TEXT)
+                            self.app_update_button_Text_var.set('Update via APT')
                         else:
                             self.app_update_status_Text_var.set(f"Update Found: {self.lastest_version}")
                             self.app_update_button_Text_var.set('Click Here to Update')
@@ -5275,7 +5315,10 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
                             self.download_update_link_var.set(UPDATE_LINUX_REPO)
                     
                     if not user_refresh:
-                        if not is_beta_version and not self.lastest_version == current_patch:
+                        if OPERATING_SYSTEM == "Linux":
+                            if is_new_update:
+                                self.command_Text.write(f"\n\nUpdate available: {self.lastest_version}\n\nInstall it with APT:\nsudo apt update\nsudo apt upgrade\n")
+                        elif not is_beta_version and is_new_update:
                             self.command_Text.write(NEW_UPDATE_FOUND_TEXT(self.lastest_version))
 
 

@@ -88,6 +88,7 @@ AUTO_SELECT = 'Auto'
 
 #LINKS
 DOWNLOAD_CHECKS = "https://raw.githubusercontent.com/TRvlvr/application_data/main/filelists/download_checks.json"
+LINUX_VERSION_MANIFEST = "https://apt.maicom.dev/uvr-manifest.json"
 MDX_MODEL_DATA_LINK = "https://raw.githubusercontent.com/TRvlvr/application_data/main/mdx_model_data/model_data_new.json"
 VR_MODEL_DATA_LINK = "https://raw.githubusercontent.com/TRvlvr/application_data/main/vr_model_data/model_data_new.json"
 MDX23_CONFIG_CHECKS = "https://raw.githubusercontent.com/TRvlvr/application_data/main/mdx_model_data/mdx_c_configs/"
@@ -1526,6 +1527,8 @@ LOADING_VERSION_INFO_TEXT = 'Loading version information...'
 CHECK_FOR_UPDATES_TEXT = 'Check for Updates'
 INFO_UNAVAILABLE_TEXT = "Information unavailable."
 UPDATE_CONFIRMATION_TEXT = 'Are you sure you want to continue?\n\nThe application will need to be restarted.\n'
+LINUX_APT_MANAGED_TEXT = 'This Linux edition is updated by APT:\n\nsudo apt update\nsudo apt upgrade\n\nSee the package README for details.'
+LINUX_UPDATE_STATUS_TEXT = 'Update available via APT'
 BROKEN_OR_INCOM_TEXT = 'Broken or Incompatible File(s) Removed. Check Error Log for details.'
 BMAC_UVR_TEXT = 'UVR \"Buy Me a Coffee\" Link'
 MDX_MENU_WAR_TEXT = '(Leave this setting as is if you are unsure.)'

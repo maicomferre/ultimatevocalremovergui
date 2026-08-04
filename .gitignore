@@ -1,5 +1,6 @@
 # Local maintenance notes (intentionally not versioned)
 MAINTENANCE_LOCAL.md
+.apt-repository-local/
 
 # Python caches and local environments
 __pycache__/

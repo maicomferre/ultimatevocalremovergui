@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-version="${UVR_DEB_VERSION:-5.6.0-4}"
+version="${UVR_DEB_VERSION:-5.6.0-5}"
 python_version="${UVR_PYTHON_VERSION:-3.14.6}"
 package_name=ultimate-vocal-remover
 max_compression_threads=6
@@ -114,6 +114,12 @@ find "${runtime_root}" -type f -iname '*.exe' -delete
 for source_path in UVR.py separate.py __version__.py demucs gui_data lib_v5 models; do
     rsync -a "${repo_dir}/${source_path}" "${staging_dir}/usr/lib/${package_name}/app/"
 done
+
+# The packaged Linux edition reports the real Debian version so the in-app
+# update check compares against the fork's own manifest, not the upstream
+# catalog. Keep the committed default and inject the build version here.
+sed -i "s/^PATCH_LINUX = .*/PATCH_LINUX = '${version}'/" \
+    "${staging_dir}/usr/lib/${package_name}/app/__version__.py"
 
 # The managed Python runtime ships Tk 9. The bundled theme works with it, but
 # its historical Tcl file unnecessarily requires the incompatible 8.6 major.

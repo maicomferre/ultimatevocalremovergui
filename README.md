@@ -36,8 +36,50 @@ It targets Ubuntu 22.04 and newer, Debian 12 and newer, and corresponding Linux
 Mint releases. GPU-specific packages will be evaluated separately after the CPU
 edition is fully validated.
 
-See the [Linux packaging guide](packaging/README.md) for build, installation,
-storage, and current validation details.
+#### Install from the APT repository
+
+The remote repository lets APT install and update UVR without downloading a
+`.deb` manually from GitHub. Confirm that the machine reports `amd64`:
+
+```bash
+dpkg --print-architecture
+```
+
+Install the repository key and source:
+
+```bash
+sudo apt update
+sudo apt install -y ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://apt.maicom.dev/uvr-archive-keyring.gpg |
+  sudo tee /etc/apt/keyrings/uvr-archive-keyring.gpg >/dev/null
+gpg --show-keys --with-fingerprint \
+  /etc/apt/keyrings/uvr-archive-keyring.gpg
+echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/uvr-archive-keyring.gpg] https://apt.maicom.dev stable main" |
+  sudo tee /etc/apt/sources.list.d/ultimate-vocal-remover.list >/dev/null
+sudo apt update
+sudo apt install ultimate-vocal-remover
+```
+
+The expected signing-key fingerprint is:
+`1016 F2DE DFD7 B3AF 8F7F EDE4 4DF5 D82D 1863 864C`.
+
+Future releases are installed through the normal system update:
+
+```bash
+sudo apt update
+sudo apt upgrade
+```
+
+Start UVR from the desktop menu or run `ultimate-vocal-remover`. To remove the
+application while preserving downloaded models and user settings:
+
+```bash
+sudo apt remove ultimate-vocal-remover
+```
+
+See the [Linux packaging guide](packaging/README.md) for local package builds,
+manual `.deb` installation, storage, and current validation details.
 
 ### Windows installation (original upstream instructions)
 

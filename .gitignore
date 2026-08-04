@@ -2,6 +2,9 @@
 MAINTENANCE_LOCAL.md
 .apt-repository-local/
 
+# IDE settings
+.idea/
+
 # Python caches and local environments
 __pycache__/
 *.py[cod]
